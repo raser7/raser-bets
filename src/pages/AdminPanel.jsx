@@ -7,6 +7,7 @@ import Logo from '../components/Logo';
 export default function AdminPanel() {
   const [file, setFile] = useState(null);
   const [analisis, setAnalisis] = useState('');
+  const [proximaHora, setProximaHora] = useState('');
   const [recomendacion, setRecomendacion] = useState('');
   const [linkApuesta, setLinkApuesta] = useState('');
   const [passwordLocal, setPasswordLocal] = useState('');
@@ -67,6 +68,7 @@ export default function AdminPanel() {
   const resetForm = () => {
     setFile(null);
     setAnalisis('');
+    setProximaHora('');
     setRecomendacion('');
     setLinkApuesta('');
     setPasswordLocal('');
@@ -111,6 +113,7 @@ export default function AdminPanel() {
       };
       
       if (recomendacion) payload.recomendacion = recomendacion;
+      if (proximaHora) payload.proxima_hora = proximaHora;
       if (imagenUrl) payload.imagen_url = imagenUrl;
 
       await setDoc(doc(db, "contenido_app", "pronostico_actual"), payload);
@@ -215,6 +218,19 @@ export default function AdminPanel() {
               value={analisis}
               onChange={(e) => setAnalisis(e.target.value)}
             ></textarea>
+          </div>
+
+          <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-white/5">
+            <label className="text-zinc-500 font-bold text-[10px] tracking-[0.15em] flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+              HORA DEL PRÓXIMO PRONÓSTICO
+            </label>
+            <input
+              type="time"
+              className="w-full bg-blue-50 dark:bg-blue-500/5 border border-blue-200 dark:border-blue-500/20 rounded-xl px-4 py-3 text-blue-600 dark:text-blue-500 focus:outline-none focus:border-blue-400 dark:focus:border-blue-500/50 text-sm font-bold tracking-wide transition-colors"
+              value={proximaHora}
+              onChange={(e) => setProximaHora(e.target.value)}
+            />
           </div>
 
           <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-white/5">

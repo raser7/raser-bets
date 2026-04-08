@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import Logo from '../components/Logo';
@@ -9,7 +9,44 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [proximaHora, setProximaHora] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "contenido_app", "pronostico_actual"), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().proxima_hora) {
+        setProximaHora(docSnap.data().proxima_hora);
+      } else {
+        setProximaHora(null);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  const formatTimeLiteral = (timeStr) => {
+    if (!timeStr) return '';
+    const [h, m] = timeStr.split(':');
+    let hour = parseInt(h, 10);
+    const min = m;
+    
+    if (hour === 12) {
+      if (min === '00') return `12:00 del DÍA`;
+      return `12:${min} de la TARDE`;
+    }
+    if (hour === 0) {
+      if (min === '00') return `12:00 de la NOCHE`;
+      return `12:${min} de la MAÑANA`;
+    }
+    if (hour < 12) {
+      return `${hour}:${min} de la MAÑANA`;
+    }
+    if (hour >= 12 && hour < 19) {
+      const ampmHour = hour === 12 ? 12 : hour - 12;
+      return `${ampmHour}:${min} de la TARDE`;
+    }
+    const ampmHour = hour - 12;
+    return `${ampmHour}:${min} de la NOCHE`;
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -148,6 +185,19 @@ export default function Login() {
             )}
           </button>
         </form>
+
+        {proximaHora && (
+          <div className="mt-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-700 bg-slate-200/50 dark:bg-zinc-900/50 rounded-2xl p-4 border border-slate-300 dark:border-zinc-800 backdrop-blur-sm transition-colors">
+            <h4 className="text-slate-500 dark:text-zinc-500 text-[10px] font-bold tracking-[0.2em] mb-2 uppercase flex items-center justify-center gap-2">
+              <span className="text-sm">⏰</span> PRÓXIMO PRONÓSTICO SE SUBIRÁ <span className="text-sm">⏰</span>
+            </h4>
+            <p className="text-slate-900 dark:text-white font-black text-lg tracking-wide">
+              {formatTimeLiteral(proximaHora).split(' ').map((word, index, arr) => 
+                index === arr.length - 1 ? <span key={index} className="text-brand ml-1">{word}</span> : word + ' '
+              )}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
