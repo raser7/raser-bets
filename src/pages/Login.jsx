@@ -13,25 +13,24 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!password) return;
-    
     setLoading(true);
     setError('');
-    
+
     try {
-      const q = query(collection(db, "configuracion"), where("password", "==", password.toUpperCase()));
+      const q = query(collection(db, 'users'), where('token', '==', password));
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
-        localStorage.setItem('raserbets_auth_password', password.toUpperCase());
-        localStorage.removeItem('raserbets_auth'); // Limpiar token antiguo por si acaso
+        const userDoc = querySnapshot.docs[0];
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userToken', userDoc.id);
         navigate('/dashboard');
       } else {
-        setError('Token inválido o expirado.');
+        setError('Token inválido. Verifica tus accesos VIP.');
       }
     } catch (err) {
-      console.log(err);
-      setError('Error de conexión.');
+      setError('Error al conectar con el servidor.');
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -39,44 +38,75 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 selection:bg-brand/30 relative">
+      <style>{`
+        @keyframes pop-alive {
+          0%, 100% { transform: scale(1) rotate(0); }
+          10% { transform: scale(1.3) rotate(-15deg); }
+          20% { transform: scale(1.05) rotate(10deg); }
+          30% { transform: scale(1.2) rotate(-5deg); }
+          40% { transform: scale(1) rotate(0); }
+        }
+        .animate-pop-alive {
+          animation: pop-alive 3.5s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
+        }
+        .animate-pop-alive-delayed {
+          animation: pop-alive 3.5s cubic-bezier(0.28, 0.84, 0.42, 1) infinite 1.75s;
+        }
+        @keyframes float-annoy {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-4px) rotate(-1deg); }
+          50% { transform: translateY(4px) rotate(1deg); }
+          75% { transform: translateY(-2px) rotate(0deg); }
+        }
+        .animate-estorbo {
+          animation: float-annoy 3s ease-in-out infinite;
+        }
+      `}</style>
       
-      <div className="absolute top-4 right-4 lg:top-6 lg:right-8 z-50 w-[92vw] lg:w-[460px] bg-zinc-950/95 backdrop-blur-xl border border-zinc-800 p-5 rounded-3xl shadow-2xl animate-in fade-in slide-in-from-top-8 duration-700">
+      {/* Banner Publicitario (estilo Casa de Apuestas) */}
+      <div className="absolute top-4 sm:top-8 z-50 w-[95vw] sm:w-[500px] flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-1000 select-none animate-estorbo bg-red-950/20 sm:bg-transparent p-5 sm:p-0 rounded-2xl border border-red-500/20 sm:border-transparent">
         
-        <div className="flex flex-col gap-5">
-           
-           {/* Line 1: WhatsApp */}
-           <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 animate-bounce">
-                 <svg className="w-12 h-12 drop-shadow-[0_0_15px_rgba(37,211,102,0.4)]" viewBox="0 0 24 24" xmlSpace="preserve" xmlns="http://www.w3.org/2000/svg">
-                   <path fill="#25D366" d="M11.99 24c6.627 0 12-5.373 12-12S18.617 0 11.99 0C5.362 0 0 5.372 0 11.999c0 2.106.551 4.135 1.597 5.945l-1.55 5.66c-.035.131.02.261.127.323.01.006.019.011.028.016.035.011.077.014.12.012l5.776-1.516c1.788 1.01 3.82 1.56 5.892 1.56"/>
-                   <path fill="#FFF" d="m18.736 15.632-2.52-1.18c-.469-.22-.988-.044-1.28.32l-1.34 1.63c-2.31-1.11-3.92-2.73-5.02-5.05l1.63-1.34c.365-.292.544-.811.325-1.28L9.362 6.22C9.07 5.6 8.35 5.51 8 6l-.999 1.25c-1.31 1.76.13 5.37 3.33 8.57s6.81 4.64 8.57 3.32l1.24-.969c.478-.344.409-1.076-.217-1.353"/>
-                 </svg>
-              </div>
-              <p className="text-zinc-300 text-[12px] md:text-[13px] leading-relaxed font-bold flex-1">
-                 Si quieres acceder al siguiente Pronositco, escribe un mensaje al ultimos numero que hablo en el grupo de wsp
-              </p>
-           </div>
-
-           {/* Divider */}
-           <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-700/50 to-transparent"></div>
-
-           {/* Line 2: Telegram */}
-           <a href="https://t.me/TULINK_AQUI" target="_blank" rel="noreferrer" className="flex items-center gap-4 group cursor-pointer hover:bg-zinc-900 p-2 -mx-2 rounded-2xl transition-all">
-              <div className="flex-shrink-0 animate-bounce" style={{ animationDelay: '150ms' }}>
-                 <svg className="w-12 h-12 drop-shadow-[0_0_15px_rgba(42,171,238,0.4)] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                   <circle cx="12" cy="12" r="12" fill="#2AABEE"/>
-                   <path d="M5.435 11.884c3.5-1.523 5.834-2.534 7.001-3.023 3.334-1.393 4.028-1.634 4.48-1.644.099 0 .324.023.473.14.12.096.151.226.166.326.014.101.02.29-.009.432-.14 1.455-.733 4.956-1.044 7.245-.133.982-.494 1.312-.843 1.343-.761.066-1.332-.43-2.072-.912-1.157-.751-1.81-1.21-2.932-1.947-1.288-.848-.452-1.32.28-2.057.192-.194 3.528-3.235 3.593-3.513.01-.035.011-.157-.061-.216-.071-.059-.18-.035-.258-.023-.11.023-1.921 1.229-5.42 3.585-.508.351-.977.522-1.4.512-.464-.01-1.352-.259-2.012-.477-.811-.26-1.451-.397-1.394-.853.03-.23.486-.697 1.396-1.168z" fill="#FFF"/>
-                 </svg>
-              </div>
-              <p className="text-[#2AABEE] group-hover:text-[#5bc1f6] text-[12px] md:text-[13px] leading-relaxed font-black underline decoration-[#2AABEE]/40 underline-offset-4 decoration-2 flex-1">
-                 o de caso contrarioenviame un mensaje al telegram usando este link
-              </p>
-           </a>
+        <div className="relative z-10 w-full text-center px-1 mb-1">
+           <h3 className="text-[#ff4444] text-[15px] sm:text-[17px] font-black tracking-widest uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-pulse">
+              🔓 ACCESO AL SIGUIENTE PRONÓSTICO 🔓
+           </h3>
         </div>
+
+        {/* WhatsApp Phantom */}
+        <div className="flex items-center gap-4 cursor-default group px-1">
+          <div className="flex-shrink-0 animate-pop-alive">
+            <svg className="w-9 h-9 drop-shadow-[0_0_10px_rgba(37,211,102,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(37,211,102,1)] transition-all duration-300" fill="none" viewBox="0 0 360 362">
+              <path fill="#25D366" fillRule="evenodd" d="M307.546 52.566C273.709 18.684 228.706.017 180.756 0 81.951 0 1.538 80.404 1.504 179.235c-.017 31.594 8.242 62.432 23.928 89.609L0 361.736l95.024-24.925c26.179 14.285 55.659 21.805 85.655 21.814h.077c98.788 0 179.21-80.413 179.244-179.244.017-47.898-18.608-92.926-52.454-126.807v-.008Zm-126.79 275.788h-.06c-26.73-.008-52.952-7.194-75.831-20.765l-5.44-3.231-56.391 14.791 15.05-54.981-3.542-5.638c-14.912-23.721-22.793-51.139-22.776-79.286.035-82.14 66.867-148.973 149.051-148.973 39.793.017 77.198 15.53 105.328 43.695 28.131 28.157 43.61 65.596 43.593 105.398-.035 82.149-66.867 148.982-148.982 148.982v.008Zm81.719-111.577c-4.478-2.243-26.497-13.073-30.606-14.568-4.108-1.496-7.09-2.243-10.073 2.243-2.982 4.487-11.568 14.577-14.181 17.559-2.613 2.991-5.226 3.361-9.704 1.117-4.477-2.243-18.908-6.97-36.02-22.226-13.313-11.878-22.304-26.54-24.916-31.027-2.613-4.486-.275-6.91 1.959-9.136 2.011-2.011 4.478-5.234 6.721-7.847 2.244-2.613 2.983-4.486 4.478-7.469 1.496-2.991.748-5.603-.369-7.847-1.118-2.243-10.073-24.289-13.812-33.253-3.636-8.732-7.331-7.546-10.073-7.692-2.613-.13-5.595-.155-8.586-.155-2.991 0-7.839 1.118-11.947 5.604-4.108 4.486-15.677 15.324-15.677 37.361s16.047 43.344 18.29 46.335c2.243 2.991 31.585 48.225 76.51 67.632 10.684 4.615 19.029 7.374 25.535 9.437 10.727 3.412 20.49 2.931 28.208 1.779 8.604-1.289 26.498-10.838 30.228-21.298 3.73-10.46 3.73-19.433 2.613-21.298-1.117-1.865-4.108-2.991-8.586-5.234l.008-.017Z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <p className="text-zinc-200 text-[13px] leading-relaxed font-bold transition-colors flex-1 drop-shadow-[0_2px_4px_rgba(0,0,0,1)] text-left">
+            Para desbloquear el siguiente pronóstico, envía un mensaje al último número publicado en el grupo de WhatsApp
+          </p>
+        </div>
+
+        {/* Telegram Phantom */}
+        <a href="https://t.me/rasermoney" target="_blank" rel="noreferrer" className="flex items-center justify-between gap-4 group outline-none relative z-10 w-full cursor-pointer px-1">
+           
+          <p className="text-[#5bc1f6] group-hover:text-[#88d1f7] transition-colors text-[13px] leading-relaxed font-bold tracking-wide flex-1 text-right drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+            También puedes contactarnos directamente por Telegram haciendo <span className="underline decoration-[#5bc1f6]/60 underline-offset-4">CLICK AQUI</span>
+          </p>
+
+          <div className="flex-shrink-0 animate-pop-alive-delayed">
+            <svg className="w-9 h-9 drop-shadow-[0_0_10px_rgba(42,171,238,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(42,171,238,1)] transition-all duration-300" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid">
+              <defs>
+                <linearGradient id="telegram__a" x1="50%" x2="50%" y1="0%" y2="100%">
+                  <stop offset="0%" stopColor="#2AABEE" />
+                  <stop offset="100%" stopColor="#229ED9" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#telegram__a)" d="M128 0C94.06 0 61.48 13.494 37.5 37.49A128.038 128.038 0 0 0 0 128c0 33.934 13.5 66.514 37.5 90.51C61.48 242.506 94.06 256 128 256s66.52-13.494 90.5-37.49c24-23.996 37.5-56.576 37.5-90.51 0-33.934-13.5-66.514-37.5-90.51C194.52 13.494 161.94 0 128 0Z" />
+              <path fill="#FFF" d="M57.94 126.648c37.32-16.256 62.2-26.974 74.64-32.152 35.56-14.786 42.94-17.354 47.76-17.441 1.06-.017 3.42.245 4.96 1.49 1.28 1.05 1.64 2.47 1.82 3.467.16.996.38 3.266.2 5.038-1.92 20.24-10.26 69.356-14.5 92.026-1.78 9.592-5.32 12.808-8.74 13.122-7.44.684-13.08-4.912-20.28-9.63-11.26-7.386-17.62-11.982-28.56-19.188-12.64-8.328-4.44-12.906 2.76-20.386 1.88-1.958 34.64-31.748 35.26-34.45.08-.338.16-1.598-.6-2.262-.74-.666-1.84-.438-2.64-.258-1.14.256-19.12 12.152-54 35.686-5.1 3.508-9.72 5.218-13.88 5.128-4.56-.098-13.36-2.584-19.9-4.708-8-2.606-14.38-3.984-13.82-8.41.28-2.304 3.46-4.662 9.52-7.072Z" />
+            </svg>
+          </div>
+        </a>
       </div>
 
-      <div className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-700 ease-out mt-10 lg:mt-0">
-        
+      <div className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-700 ease-out mt-40 lg:mt-0 relative z-10">
         <div className="flex flex-col items-center mb-12">
           <Logo className="w-20 h-20 text-brand mb-6 drop-shadow-[0_0_35px_rgba(0,255,102,0.25)]" />
           <h1 className="text-2xl font-black tracking-[0.2em] text-white">ACCESO VIP</h1>
@@ -84,43 +114,42 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <div className="relative group">
+            <div className="relative">
               <input
                 type="text"
                 placeholder="TOKEN DE SEGURIDAD"
                 className="w-full bg-zinc-950/50 border border-zinc-800/80 rounded-xl px-5 py-4 text-white placeholder-zinc-700 focus:outline-none focus:border-brand/40 focus:bg-zinc-900 transition-all font-mono tracking-[0.2em] text-center text-sm uppercase shadow-inner"
                 value={password}
                 onChange={(e) => setPassword(e.target.value.toUpperCase())}
-                autoComplete="off"
-                autoCorrect="off"
+                disabled={loading}
               />
-              <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/5 pointer-events-none"></div>
             </div>
-            {error && (
-              <p className="text-red-400 text-xs text-center font-medium mt-3 animate-in fade-in slide-in-from-top-1">
-                {error}
-              </p>
-            )}
           </div>
 
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center py-3 px-4 rounded-xl font-medium tracking-wide">
+              {error}
+            </div>
+          )}
+
           <button
-            disabled={loading}
             type="submit"
-            className="w-full bg-white hover:bg-brand text-black font-extrabold tracking-widest text-[13px] py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:bg-white active:scale-95 group overflow-hidden relative shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(0,255,102,0.3)] mt-2"
+            disabled={loading || !password}
+            className="w-full bg-brand hover:bg-brand/90 text-black font-black uppercase tracking-[0.2em] py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center relative overflow-hidden"
           >
-            <div className="absolute inset-0 w-1/2 h-full bg-white/30 skew-x-12 -translate-x-full group-hover:animate-[shine_1s_ease-out]"></div>
-            {loading ? <Loader2 className="w-5 h-5 animate-spin relative z-10" /> : (
-              <>
-                <span className="relative z-10">VALIDAR TOKEN</span>
-                <ArrowRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all relative z-10" />
-              </>
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 border-black animate-spin" />
+                VERIFICANDO
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                INGRESAR
+                <ArrowRight className="w-5 h-5 transition-transform" />
+              </span>
             )}
           </button>
         </form>
-        
-        <div className="mt-12 text-center text-zinc-700/50 text-[10px] tracking-widest font-mono">
-          <p>SISTEMA RESTRINGIDO</p>
-        </div>
       </div>
     </div>
   );
