@@ -298,54 +298,65 @@ export default function AdminPanel() {
          </div>
          
          {!currentPost ? (
-           <div className="w-full max-w-md mt-20 py-32 flex flex-col items-center justify-center text-zinc-700 border border-zinc-900 border-dashed rounded-3xl bg-zinc-950/30">
+           <div className="w-full max-w-2xl mt-20 py-32 flex flex-col items-center justify-center text-zinc-700 border border-zinc-900 border-dashed rounded-3xl bg-zinc-950/30">
              <RefreshCcw className="w-10 h-10 mb-4 opacity-20" />
              <p className="font-bold tracking-[0.2em] text-[10px]">NO HAY PUBLICACIÓN ACTIVA</p>
            </div>
          ) : (
-           <div className="w-full max-w-md mt-20 bg-[#0a0a0c] border border-zinc-800/80 rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[75vh]">
+           <div className="w-full max-w-4xl mt-12 bg-[#0a0a0c] border border-zinc-800/80 rounded-[2rem] p-6 shadow-1xl relative overflow-y-auto custom-scrollbar max-h-[85vh]">
               
-              <div className="overflow-y-auto custom-scrollbar flex-1 pr-2 space-y-6">
-                {currentPost.imagen_url && (
-                  <div className="w-full rounded-2xl overflow-hidden relative border border-white/5 bg-black">
-                     <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 shadow-lg">
-                       <div className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse shadow-[0_0_8px_#00ff66]"></div>
-                       APUESTA
-                     </div>
-                     <img src={currentPost.imagen_url} className="w-full h-auto object-cover opacity-90" alt="Preview"/>
-                  </div>
-                )}
+              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+                
+                {/* Columna Izquierda (Imagen, Recom, Link) */}
+                <div className="w-full lg:w-5/12 space-y-6">
+                  {currentPost.imagen_url && (
+                    <div className="w-full rounded-2xl overflow-hidden relative border border-white/5 bg-black">
+                       <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 shadow-lg">
+                         <div className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse shadow-[0_0_8px_#00ff66]"></div>
+                         APUESTA
+                       </div>
+                       <img src={currentPost.imagen_url} className="w-full h-auto object-cover opacity-90" alt="Preview"/>
+                    </div>
+                  )}
 
-                {currentPost.recomendacion && (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 shadow-inner">
-                    <h3 className="text-red-500 text-[9px] font-black tracking-[0.2em] mb-1 flex items-center gap-2">
-                       LÍMITE RECOMENDADO
-                    </h3>
-                    <p className="text-red-400 font-bold text-xs">{currentPost.recomendacion}</p>
-                  </div>
-                )}
+                  {currentPost.recomendacion && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 shadow-inner">
+                      <h3 className="text-red-500 text-[9px] font-black tracking-[0.2em] mb-1 flex items-center gap-2">
+                         LÍMITE RECOMENDADO MÁXIMO
+                      </h3>
+                      <p className="text-red-400 font-bold text-xs tracking-wide">{currentPost.recomendacion}</p>
+                    </div>
+                  )}
 
-                {currentPost.link_apuesta && (
-                  <div>
-                    <a href={currentPost.link_apuesta} target="_blank" rel="noreferrer" className="w-full flex items-center justify-between bg-zinc-900/50 hover:bg-zinc-800 text-white font-bold text-[11px] tracking-[0.15em] py-4 px-6 rounded-xl border border-zinc-800/50 transition-colors">
-                      <span className="flex-1 text-center pl-6">IR A LA CASA</span>
-                      <ExternalLink className="w-4 h-4 text-zinc-500" />
-                    </a>
-                  </div>
-                )}
+                  {currentPost.link_apuesta && (
+                    <div className="w-full group flex flex-col bg-brand text-black rounded-2xl relative overflow-hidden">
+                      <div className="flex items-center justify-between py-4 px-5 relative z-10">
+                        <span className="flex-1 text-center font-black text-[11px] md:text-[12px] tracking-[0.1em]">TOCA AQUÍ PARA HACER LA JUGADA</span>
+                        <div className="bg-black/10 p-1.5 rounded-lg border border-black/5">
+                          <ExternalLink className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="bg-black/10 py-2 px-3 text-center border-t border-black/10 relative z-10">
+                        <span className="text-[8px] font-bold tracking-widest opacity-80 break-all">{currentPost.link_apuesta}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
+                {/* Columna Derecha (Análisis) */}
                 {currentPost.analisis && (
-                  <div className="pt-2 border-t border-white/5">
+                  <div className="w-full lg:w-7/12 bg-[#050505] border border-white/5 rounded-2xl p-6 h-fit">
                      <h3 className="text-[9px] font-bold text-brand mb-3 tracking-[0.2em] flex items-center gap-2">
                         INFORME VIP
+                        <div className="flex-1 h-px bg-gradient-to-r from-brand/20 to-transparent ml-2"></div>
                      </h3>
                      <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap font-medium">
                        {currentPost.analisis}
                      </p>
                   </div>
                 )}
+                
               </div>
-
            </div>
          )}
       </div>
