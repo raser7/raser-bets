@@ -23,31 +23,6 @@ export default function Login() {
     return () => unsub();
   }, []);
 
-  const formatTimeLiteral = (timeStr) => {
-    if (!timeStr) return '';
-    const [h, m] = timeStr.split(':');
-    let hour = parseInt(h, 10);
-    const min = m;
-    
-    if (hour === 12) {
-      if (min === '00') return `12:00 del DÍA`;
-      return `12:${min} de la TARDE`;
-    }
-    if (hour === 0) {
-      if (min === '00') return `12:00 de la NOCHE`;
-      return `12:${min} de la MAÑANA`;
-    }
-    if (hour < 12) {
-      return `${hour}:${min} de la MAÑANA`;
-    }
-    if (hour >= 12 && hour < 19) {
-      const ampmHour = hour === 12 ? 12 : hour - 12;
-      return `${ampmHour}:${min} de la TARDE`;
-    }
-    const ampmHour = hour - 12;
-    return `${ampmHour}:${min} de la NOCHE`;
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -192,7 +167,7 @@ export default function Login() {
               <span className="text-sm">⏰</span> PRÓXIMO PRONÓSTICO SE SUBIRÁ <span className="text-sm">⏰</span>
             </h4>
             <p className="text-slate-900 dark:text-white font-black text-lg tracking-wide">
-              {formatTimeLiteral(proximaHora).split(' ').map((word, index, arr) => 
+              {proximaHora.split(' ').map((word, index, arr) => 
                 index === arr.length - 1 ? <span key={index} className="text-brand ml-1">{word}</span> : word + ' '
               )}
             </p>

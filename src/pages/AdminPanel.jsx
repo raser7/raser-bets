@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { Upload, Link2, Send, Loader2, CheckCircle2, RefreshCcw, Copy, ExternalLink, Activity } from 'lucide-react';
+import { Upload, Link2, Send, Loader2, CheckCircle2, RefreshCcw, Copy, ExternalLink, Activity, Clock, X } from 'lucide-react';
 import Logo from '../components/Logo';
 
 export default function AdminPanel() {
@@ -17,6 +17,11 @@ export default function AdminPanel() {
   const [isAdminAuthed, setIsAdminAuthed] = useState(false);
   const [masterPass, setMasterPass] = useState('');
   
+  const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
+  const [modalHour, setModalHour] = useState('12');
+  const [modalMin, setModalMin] = useState('00');
+  const [modalPeriod, setModalPeriod] = useState('de la MAÑANA');
+
   const [currentPost, setCurrentPost] = useState(null);
 
   const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
@@ -221,19 +226,6 @@ export default function AdminPanel() {
           </div>
 
           <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-white/5">
-            <label className="text-zinc-500 font-bold text-[10px] tracking-[0.15em] flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-              HORA DEL PRÓXIMO PRONÓSTICO
-            </label>
-            <input
-              type="time"
-              className="w-full bg-blue-50 dark:bg-blue-500/5 border border-blue-200 dark:border-blue-500/20 rounded-xl px-4 py-3 text-blue-600 dark:text-blue-500 focus:outline-none focus:border-blue-400 dark:focus:border-blue-500/50 text-sm font-bold tracking-wide transition-colors"
-              value={proximaHora}
-              onChange={(e) => setProximaHora(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-white/5">
             <label className="text-red-500 font-bold text-[10px] tracking-[0.15em] flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
               LÍMITE MÁXIMO A APOSTAR
@@ -319,9 +311,18 @@ export default function AdminPanel() {
              <Activity className="w-4 h-4" />
              VISTA PREVIA EN VIVO
            </h2>
-           <span className="text-[9px] font-black text-brand bg-brand/10 px-3 py-1.5 rounded-full border border-brand/20 uppercase tracking-widest shadow-[0_0_15px_rgba(0,255,102,0.1)]">
-             CLIENTE ACTIVO
-           </span>
+           <div className="flex items-center gap-3">
+             <button
+               onClick={() => setIsTimeModalOpen(true)}
+               className="flex items-center gap-2 text-[9px] font-black text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-500/20 uppercase tracking-widest hover:bg-blue-200 dark:hover:bg-blue-500/20 transition-colors"
+             >
+               <Clock className="w-3 h-3" />
+               PROGRAMAR HORA
+             </button>
+             <span className="text-[9px] font-black text-brand bg-brand/10 px-3 py-1.5 rounded-full border border-brand/20 uppercase tracking-widest shadow-[0_0_15px_rgba(0,255,102,0.1)]">
+               CLIENTE ACTIVO
+             </span>
+           </div>
          </div>
          
          {!currentPost ? (
@@ -389,6 +390,77 @@ export default function AdminPanel() {
          )}
       </div>
       
+      {/* MODAL CONFIGURAR HORA */}
+      {isTimeModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 dark:bg-black/80 backdrop-blur-sm transition-opacity p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setIsTimeModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-[0.1em] mb-6 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-500" />
+              HORA DEL PRÓXIMO PRONÓSTICO
+            </h3>
+
+            <div className="flex gap-3 mb-6">
+              <select 
+                value={modalHour} 
+                onChange={(e) => setModalHour(e.target.value)}
+                className="flex-1 bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-800 dark:text-white focus:outline-none focus:border-blue-500/50 text-center font-bold font-mono text-lg transition-colors appearance-none"
+              >
+                {[...Array(12)].map((_, i) => (
+                  <option key={i+1} value={i+1}>{i+1}</option>
+                ))}
+              </select>
+
+              <span className="text-2xl font-black text-slate-400 self-center">:</span>
+
+              <select 
+                value={modalMin} 
+                onChange={(e) => setModalMin(e.target.value)}
+                className="flex-1 bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-800 dark:text-white focus:outline-none focus:border-blue-500/50 text-center font-bold font-mono text-lg transition-colors appearance-none"
+              >
+                {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+
+            <select
+              value={modalPeriod}
+              onChange={(e) => setModalPeriod(e.target.value)}
+              className="w-full mb-6 bg-slate-50 dark:bg-[#0f1115] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-800 dark:text-white focus:outline-none focus:border-blue-500/50 font-black tracking-widest text-center text-sm uppercase transition-colors appearance-none"
+            >
+              <option value="de la MAÑANA">DE LA MAÑANA</option>
+              <option value="de la TARDE">DE LA TARDE</option>
+              <option value="de la NOCHE">DE LA NOCHE</option>
+              <option value="del DÍA">DEL DÍA (12 AM/PM)</option>
+            </select>
+
+            <button
+               onClick={async () => {
+                 const horaGuardar = `${modalHour}:${modalMin} ${modalPeriod}`;
+                 setProximaHora(horaGuardar); 
+                 
+                 try {
+                   await setDoc(doc(db, "contenido_app", "pronostico_actual"), { proxima_hora: horaGuardar }, { merge: true });
+                   setIsTimeModalOpen(false);
+                   alert(`¡Hora Programada y Guardada en Vivo!: ${horaGuardar}`);
+                 } catch (err) {
+                   console.error(err);
+                   alert("Error al intentar guardar hora");
+                 }
+               }}
+               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[12px] tracking-[0.1em] py-3.5 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-500/20"
+            >
+              APLICAR Y GUARDAR
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
