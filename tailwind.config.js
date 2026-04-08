@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,8 +8,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand': '#00ff66',
-        'dark': '#000000'
+        'brand': 'var(--color-brand)',
+        'dark': '#1a1a1a'
       },
       keyframes: {
         shine: {

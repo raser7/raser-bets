@@ -2,9 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --color-brand: #059669; /* Emerald 600 - Excelente legibilidad y contraste en fondos claros */
+  }
+  .dark {
+    --color-brand: #00ff66; /* Neón original para el modo oscuro */
+  }
+}
+
 @layer utilities {
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl;
+    @apply bg-white/5 backdrop-blur-md border border-black/10 dark:border-white/10 rounded-2xl;
   }
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -13,11 +22,15 @@
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+    @apply bg-zinc-300 dark:bg-white/10 rounded-full hover:bg-zinc-400 dark:hover:bg-white/20 transition-colors;
   }
 }
 
 body {
-  background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
-  background-attachment: fixed;
+  @apply bg-slate-50 text-slate-900 transition-colors duration-500 ease-in-out;
+}
+
+.dark body {
+  @apply bg-slate-900 text-slate-50;
+  /* Eliminamos el negro puro radial antiguo y dejamos el gris muy oscuro (slate-900) */
 }

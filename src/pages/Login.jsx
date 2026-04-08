@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import Logo from '../components/Logo';
@@ -17,13 +17,11 @@ export default function Login() {
     setError('');
 
     try {
-      const q = query(collection(db, 'users'), where('token', '==', password));
-      const querySnapshot = await getDocs(q);
+      const configRef = doc(db, "configuracion", "seguridad");
+      const configSnap = await getDoc(configRef);
 
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userToken', userDoc.id);
+      if (configSnap.exists() && configSnap.data().password === password) {
+        localStorage.setItem('raserbets_auth_password', password);
         navigate('/dashboard');
       } else {
         setError('Token inválido. Verifica tus accesos VIP.');
@@ -37,7 +35,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 selection:bg-brand/30 relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4 selection:bg-brand/30 relative transition-colors duration-500">
       <style>{`
         @keyframes pop-alive {
           0%, 100% { transform: scale(1) rotate(0); }
@@ -64,10 +62,10 @@ export default function Login() {
       `}</style>
       
       {/* Banner Publicitario (estilo Casa de Apuestas) */}
-      <div className="absolute top-4 sm:top-8 z-50 w-[95vw] sm:w-[500px] flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-1000 select-none animate-estorbo bg-red-950/20 sm:bg-transparent p-5 sm:p-0 rounded-2xl border border-red-500/20 sm:border-transparent">
+      <div className="absolute top-4 sm:top-8 z-50 w-[95vw] sm:w-[500px] flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-1000 select-none animate-estorbo bg-red-50/50 dark:bg-red-950/20 sm:bg-transparent sm:dark:bg-transparent p-5 sm:p-0 rounded-2xl border border-red-200 dark:border-red-500/20 sm:border-transparent sm:dark:border-transparent transition-colors">
         
         <div className="relative z-10 w-full text-center px-1 mb-1">
-           <h3 className="text-[#ff4444] text-[15px] sm:text-[17px] font-black tracking-widest uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-pulse">
+           <h3 className="text-red-600 dark:text-[#ff4444] text-[15px] sm:text-[17px] font-black tracking-widest uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-pulse transition-colors">
               🔓 ACCESO AL SIGUIENTE PRONÓSTICO 🔓
            </h3>
         </div>
@@ -75,11 +73,11 @@ export default function Login() {
         {/* WhatsApp Phantom */}
         <div className="flex items-center gap-4 cursor-default group px-1">
           <div className="flex-shrink-0 animate-pop-alive">
-            <svg className="w-9 h-9 drop-shadow-[0_0_10px_rgba(37,211,102,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(37,211,102,1)] transition-all duration-300" fill="none" viewBox="0 0 360 362">
+            <svg className="w-9 h-9 drop-shadow-[0_0_10px_rgba(37,211,102,0.5)] dark:drop-shadow-[0_0_10px_rgba(37,211,102,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(37,211,102,1)] transition-all duration-300" fill="none" viewBox="0 0 360 362">
               <path fill="#25D366" fillRule="evenodd" d="M307.546 52.566C273.709 18.684 228.706.017 180.756 0 81.951 0 1.538 80.404 1.504 179.235c-.017 31.594 8.242 62.432 23.928 89.609L0 361.736l95.024-24.925c26.179 14.285 55.659 21.805 85.655 21.814h.077c98.788 0 179.21-80.413 179.244-179.244.017-47.898-18.608-92.926-52.454-126.807v-.008Zm-126.79 275.788h-.06c-26.73-.008-52.952-7.194-75.831-20.765l-5.44-3.231-56.391 14.791 15.05-54.981-3.542-5.638c-14.912-23.721-22.793-51.139-22.776-79.286.035-82.14 66.867-148.973 149.051-148.973 39.793.017 77.198 15.53 105.328 43.695 28.131 28.157 43.61 65.596 43.593 105.398-.035 82.149-66.867 148.982-148.982 148.982v.008Zm81.719-111.577c-4.478-2.243-26.497-13.073-30.606-14.568-4.108-1.496-7.09-2.243-10.073 2.243-2.982 4.487-11.568 14.577-14.181 17.559-2.613 2.991-5.226 3.361-9.704 1.117-4.477-2.243-18.908-6.97-36.02-22.226-13.313-11.878-22.304-26.54-24.916-31.027-2.613-4.486-.275-6.91 1.959-9.136 2.011-2.011 4.478-5.234 6.721-7.847 2.244-2.613 2.983-4.486 4.478-7.469 1.496-2.991.748-5.603-.369-7.847-1.118-2.243-10.073-24.289-13.812-33.253-3.636-8.732-7.331-7.546-10.073-7.692-2.613-.13-5.595-.155-8.586-.155-2.991 0-7.839 1.118-11.947 5.604-4.108 4.486-15.677 15.324-15.677 37.361s16.047 43.344 18.29 46.335c2.243 2.991 31.585 48.225 76.51 67.632 10.684 4.615 19.029 7.374 25.535 9.437 10.727 3.412 20.49 2.931 28.208 1.779 8.604-1.289 26.498-10.838 30.228-21.298 3.73-10.46 3.73-19.433 2.613-21.298-1.117-1.865-4.108-2.991-8.586-5.234l.008-.017Z" clipRule="evenodd" />
             </svg>
           </div>
-          <p className="text-zinc-200 text-[13px] leading-relaxed font-bold transition-colors flex-1 drop-shadow-[0_2px_4px_rgba(0,0,0,1)] text-left">
+          <p className="text-slate-800 dark:text-zinc-200 text-[13px] leading-relaxed font-bold transition-colors flex-1 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] text-left">
             Para desbloquear el siguiente pronóstico, envía un mensaje al último número publicado en el grupo de WhatsApp
           </p>
         </div>
@@ -87,12 +85,12 @@ export default function Login() {
         {/* Telegram Phantom */}
         <a href="https://t.me/rasermoney" target="_blank" rel="noreferrer" className="flex items-center justify-between gap-4 group outline-none relative z-10 w-full cursor-pointer px-1">
            
-          <p className="text-[#5bc1f6] group-hover:text-[#88d1f7] transition-colors text-[13px] leading-relaxed font-bold tracking-wide flex-1 text-right drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
-            También puedes contactarnos directamente por Telegram haciendo <span className="underline decoration-[#5bc1f6]/60 underline-offset-4">CLICK AQUI</span>
+          <p className="text-[#2AABEE] dark:text-[#5bc1f6] group-hover:text-[#229ED9] dark:group-hover:text-[#88d1f7] transition-colors text-[13px] leading-relaxed font-bold tracking-wide flex-1 text-right drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+            También puedes contactarnos directamente por Telegram haciendo <span className="underline decoration-[#2AABEE]/60 dark:decoration-[#5bc1f6]/60 underline-offset-4">CLICK AQUI</span>
           </p>
 
           <div className="flex-shrink-0 animate-pop-alive-delayed">
-            <svg className="w-9 h-9 drop-shadow-[0_0_10px_rgba(42,171,238,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(42,171,238,1)] transition-all duration-300" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid">
+            <svg className="w-9 h-9 drop-shadow-[0_0_10px_rgba(42,171,238,0.4)] dark:drop-shadow-[0_0_10px_rgba(42,171,238,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(42,171,238,1)] transition-all duration-300" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid">
               <defs>
                 <linearGradient id="telegram__a" x1="50%" x2="50%" y1="0%" y2="100%">
                   <stop offset="0%" stopColor="#2AABEE" />
@@ -109,7 +107,7 @@ export default function Login() {
       <div className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-700 ease-out mt-40 lg:mt-0 relative z-10">
         <div className="flex flex-col items-center mb-12">
           <Logo className="w-20 h-20 text-brand mb-6 drop-shadow-[0_0_35px_rgba(0,255,102,0.25)]" />
-          <h1 className="text-2xl font-black tracking-[0.2em] text-white">ACCESO VIP</h1>
+          <h1 className="text-2xl font-black tracking-[0.2em] text-slate-900 dark:text-white transition-colors">ACCESO VIP</h1>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
@@ -118,7 +116,7 @@ export default function Login() {
               <input
                 type="text"
                 placeholder="TOKEN DE SEGURIDAD"
-                className="w-full bg-zinc-950/50 border border-zinc-800/80 rounded-xl px-5 py-4 text-white placeholder-zinc-700 focus:outline-none focus:border-brand/40 focus:bg-zinc-900 transition-all font-mono tracking-[0.2em] text-center text-sm uppercase shadow-inner"
+                className="w-full bg-white dark:bg-zinc-950/50 border border-slate-200 dark:border-zinc-800/80 rounded-xl px-5 py-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-700 focus:outline-none focus:border-brand/50 dark:focus:border-brand/40 focus:bg-slate-50 dark:focus:bg-zinc-900 transition-all font-mono tracking-[0.2em] text-center text-sm uppercase shadow-sm dark:shadow-inner"
                 value={password}
                 onChange={(e) => setPassword(e.target.value.toUpperCase())}
                 disabled={loading}
@@ -127,7 +125,7 @@ export default function Login() {
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center py-3 px-4 rounded-xl font-medium tracking-wide">
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-xs text-center py-3 px-4 rounded-xl font-medium tracking-wide transition-colors">
               {error}
             </div>
           )}
@@ -135,15 +133,15 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading || !password}
-            className="w-full bg-brand hover:bg-brand/90 text-black font-black uppercase tracking-[0.2em] py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center relative overflow-hidden"
+            className="w-full bg-brand hover:bg-slate-900 dark:hover:bg-white text-black hover:text-white dark:hover:text-black font-black uppercase tracking-[0.2em] py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center relative shadow-lg shadow-brand/20 dark:shadow-none"
           >
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-5 h-5 border-black animate-spin" />
+              <span className="flex items-center justify-center gap-2 relative z-10">
+                <Loader2 className="w-5 h-5 animate-spin" />
                 VERIFICANDO
               </span>
             ) : (
-              <span className="flex items-center justify-center gap-2">
+              <span className="flex items-center justify-center gap-2 relative z-10">
                 INGRESAR
                 <ArrowRight className="w-5 h-5 transition-transform" />
               </span>
