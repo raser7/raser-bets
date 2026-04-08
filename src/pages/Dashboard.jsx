@@ -93,10 +93,6 @@ export default function Dashboard() {
             <div className="w-full lg:w-5/12 space-y-6">
               {data.imagen_url && (
                 <div className="w-full bg-white dark:bg-[#050505] border border-slate-200 dark:border-zinc-900 rounded-3xl overflow-hidden shadow-xl dark:shadow-2xl relative group transition-colors">
-                  <div className="absolute top-4 left-4 z-10 bg-white/80 dark:bg-black/60 backdrop-blur-md text-slate-900 dark:text-white text-[9px] font-bold tracking-[0.2em] px-3 py-1.5 rounded-full border border-slate-200 dark:border-white/10 flex items-center gap-2 shadow-lg">
-                    <div className="w-1.5 h-1.5 bg-brand rounded-full"></div>
-                    APUESTA VIGENTE
-                  </div>
                   <img
                     src={data.imagen_url}
                     alt="Jugada"

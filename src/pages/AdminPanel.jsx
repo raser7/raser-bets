@@ -322,10 +322,6 @@ export default function AdminPanel() {
                 <div className="w-full lg:w-5/12 space-y-6">
                   {currentPost.imagen_url && (
                     <div className="w-full rounded-2xl overflow-hidden relative border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black transition-colors">
-                       <div className="absolute top-4 left-4 z-10 bg-white/80 dark:bg-black/60 backdrop-blur-md text-slate-900 dark:text-white text-[9px] font-bold tracking-[0.2em] px-3 py-1.5 rounded-full border border-slate-200 dark:border-white/10 flex items-center gap-2 shadow-lg">
-                         <div className="w-1.5 h-1.5 bg-brand rounded-full"></div>
-                         APUESTA
-                       </div>
                        <img src={currentPost.imagen_url} className="w-full h-auto object-cover opacity-95 dark:opacity-90" alt="Preview"/>
                     </div>
                   )}

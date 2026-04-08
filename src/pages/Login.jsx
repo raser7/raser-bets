@@ -62,35 +62,35 @@ export default function Login() {
       `}</style>
       
       {/* Banner Publicitario (estilo Casa de Apuestas) */}
-      <div className="absolute top-4 sm:top-8 z-50 w-[95vw] sm:w-[500px] flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-1000 select-none animate-estorbo bg-red-50/50 dark:bg-red-950/20 sm:bg-transparent sm:dark:bg-transparent p-5 sm:p-0 rounded-2xl border border-red-200 dark:border-red-500/20 sm:border-transparent sm:dark:border-transparent transition-colors">
+      <div className="absolute top-2 sm:top-8 z-50 w-[95vw] sm:w-[500px] flex flex-col gap-3 sm:gap-6 animate-in fade-in slide-in-from-top-4 duration-1000 select-none animate-estorbo bg-red-50/50 dark:bg-red-950/20 sm:bg-transparent sm:dark:bg-transparent p-3 sm:p-0 rounded-2xl border border-red-200 dark:border-red-500/20 sm:border-transparent sm:dark:border-transparent transition-colors">
         
-        <div className="relative z-10 w-full text-center px-1 mb-1">
-           <h3 className="text-red-600 dark:text-[#ff4444] text-[15px] sm:text-[17px] font-black tracking-widest uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-pulse transition-colors">
+        <div className="relative z-10 w-full text-center px-1 mb-0 sm:mb-1">
+           <h3 className="text-red-600 dark:text-[#ff4444] text-[12px] sm:text-[17px] font-black tracking-widest uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-pulse transition-colors">
               🔓 ACCESO AL SIGUIENTE PRONÓSTICO 🔓
            </h3>
         </div>
 
         {/* WhatsApp Phantom */}
-        <div className="flex items-center gap-4 cursor-default group px-1">
+        <div className="flex items-center gap-3 sm:gap-4 cursor-default group px-1">
           <div className="flex-shrink-0 animate-pop-alive">
-            <svg className="w-9 h-9 drop-shadow-[0_0_10px_rgba(37,211,102,0.5)] dark:drop-shadow-[0_0_10px_rgba(37,211,102,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(37,211,102,1)] transition-all duration-300" fill="none" viewBox="0 0 360 362">
+            <svg className="w-7 h-7 sm:w-9 sm:h-9 drop-shadow-[0_0_10px_rgba(37,211,102,0.5)] dark:drop-shadow-[0_0_10px_rgba(37,211,102,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(37,211,102,1)] transition-all duration-300" fill="none" viewBox="0 0 360 362">
               <path fill="#25D366" fillRule="evenodd" d="M307.546 52.566C273.709 18.684 228.706.017 180.756 0 81.951 0 1.538 80.404 1.504 179.235c-.017 31.594 8.242 62.432 23.928 89.609L0 361.736l95.024-24.925c26.179 14.285 55.659 21.805 85.655 21.814h.077c98.788 0 179.21-80.413 179.244-179.244.017-47.898-18.608-92.926-52.454-126.807v-.008Zm-126.79 275.788h-.06c-26.73-.008-52.952-7.194-75.831-20.765l-5.44-3.231-56.391 14.791 15.05-54.981-3.542-5.638c-14.912-23.721-22.793-51.139-22.776-79.286.035-82.14 66.867-148.973 149.051-148.973 39.793.017 77.198 15.53 105.328 43.695 28.131 28.157 43.61 65.596 43.593 105.398-.035 82.149-66.867 148.982-148.982 148.982v.008Zm81.719-111.577c-4.478-2.243-26.497-13.073-30.606-14.568-4.108-1.496-7.09-2.243-10.073 2.243-2.982 4.487-11.568 14.577-14.181 17.559-2.613 2.991-5.226 3.361-9.704 1.117-4.477-2.243-18.908-6.97-36.02-22.226-13.313-11.878-22.304-26.54-24.916-31.027-2.613-4.486-.275-6.91 1.959-9.136 2.011-2.011 4.478-5.234 6.721-7.847 2.244-2.613 2.983-4.486 4.478-7.469 1.496-2.991.748-5.603-.369-7.847-1.118-2.243-10.073-24.289-13.812-33.253-3.636-8.732-7.331-7.546-10.073-7.692-2.613-.13-5.595-.155-8.586-.155-2.991 0-7.839 1.118-11.947 5.604-4.108 4.486-15.677 15.324-15.677 37.361s16.047 43.344 18.29 46.335c2.243 2.991 31.585 48.225 76.51 67.632 10.684 4.615 19.029 7.374 25.535 9.437 10.727 3.412 20.49 2.931 28.208 1.779 8.604-1.289 26.498-10.838 30.228-21.298 3.73-10.46 3.73-19.433 2.613-21.298-1.117-1.865-4.108-2.991-8.586-5.234l.008-.017Z" clipRule="evenodd" />
             </svg>
           </div>
-          <p className="text-slate-800 dark:text-zinc-200 text-[13px] leading-relaxed font-bold transition-colors flex-1 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] text-left">
+          <p className="text-slate-800 dark:text-zinc-200 text-[11px] sm:text-[13px] leading-snug sm:leading-relaxed font-bold transition-colors flex-1 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)] text-left">
             Para desbloquear el siguiente pronóstico, envía un mensaje al último número publicado en el grupo de WhatsApp
           </p>
         </div>
 
         {/* Telegram Phantom */}
-        <a href="https://t.me/rasermoney" target="_blank" rel="noreferrer" className="flex items-center justify-between gap-4 group outline-none relative z-10 w-full cursor-pointer px-1">
+        <a href="https://t.me/rasermoney" target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 sm:gap-4 group outline-none relative z-10 w-full cursor-pointer px-1">
            
-          <p className="text-[#2AABEE] dark:text-[#5bc1f6] group-hover:text-[#229ED9] dark:group-hover:text-[#88d1f7] transition-colors text-[13px] leading-relaxed font-bold tracking-wide flex-1 text-right drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+          <p className="text-[#2AABEE] dark:text-[#5bc1f6] group-hover:text-[#229ED9] dark:group-hover:text-[#88d1f7] transition-colors text-[11px] sm:text-[13px] leading-snug sm:leading-relaxed font-bold tracking-wide flex-1 text-right drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
             También puedes contactarnos directamente por Telegram haciendo <span className="underline decoration-[#2AABEE]/60 dark:decoration-[#5bc1f6]/60 underline-offset-4">CLICK AQUI</span>
           </p>
 
           <div className="flex-shrink-0 animate-pop-alive-delayed">
-            <svg className="w-9 h-9 drop-shadow-[0_0_10px_rgba(42,171,238,0.4)] dark:drop-shadow-[0_0_10px_rgba(42,171,238,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(42,171,238,1)] transition-all duration-300" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid">
+            <svg className="w-7 h-7 sm:w-9 sm:h-9 drop-shadow-[0_0_10px_rgba(42,171,238,0.4)] dark:drop-shadow-[0_0_10px_rgba(42,171,238,0.8)] group-hover:drop-shadow-[0_0_20px_rgba(42,171,238,1)] transition-all duration-300" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid">
               <defs>
                 <linearGradient id="telegram__a" x1="50%" x2="50%" y1="0%" y2="100%">
                   <stop offset="0%" stopColor="#2AABEE" />
