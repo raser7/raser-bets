@@ -120,16 +120,21 @@ export default function Dashboard() {
                   )}
 
                   {data.link_apuesta && (
-                    <a
-                      href={data.link_apuesta}
-                      target="_blank"
+                    <a 
+                      href={data.link_apuesta} 
+                      target="_blank" 
                       rel="noreferrer"
-                      className="w-full group flex items-center justify-between bg-brand hover:bg-white text-black font-black text-[13px] tracking-[0.15em] py-5 px-6 rounded-2xl transition-all duration-300 active:scale-95 shadow-[0_0_30px_rgba(0,255,102,0.15)] hover:shadow-[0_0_50px_rgba(255,255,255,0.25)] relative overflow-hidden"
+                      className="w-full group flex flex-col bg-brand hover:bg-white text-black rounded-2xl transition-all duration-300 active:scale-95 shadow-[0_0_30px_rgba(0,255,102,0.15)] hover:shadow-[0_0_50px_rgba(255,255,255,0.25)] relative overflow-hidden"
                     >
                       <div className="absolute inset-0 w-1/3 h-full bg-white/40 skew-x-12 -translate-x-[200%] group-hover:animate-[shine_1.5s_ease-out_infinite]"></div>
-                      <span className="flex-1 text-center pl-8 relative z-10">EJECUTAR JUGADA AHORA</span>
-                      <div className="bg-black/10 p-2 rounded-xl group-hover:bg-black/5 transition-colors relative z-10">
-                        <ExternalLink className="w-5 h-5" />
+                      <div className="flex items-center justify-between py-5 px-6 relative z-10">
+                        <span className="flex-1 text-center pl-8 font-black text-[12px] md:text-[13px] tracking-[0.15em]">TOCA AQUÍ PARA HACER LA JUGADA</span>
+                        <div className="bg-black/10 p-2 rounded-xl group-hover:bg-black/5 transition-colors">
+                          <ExternalLink className="w-5 h-5" />
+                        </div>
+                      </div>
+                      <div className="bg-black/10 py-2.5 px-4 text-center border-t border-black/10 relative z-10">
+                        <span className="text-[9px] font-bold tracking-widest opacity-80 break-all">{data.link_apuesta}</span>
                       </div>
                     </a>
                   )}
