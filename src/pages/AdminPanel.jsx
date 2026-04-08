@@ -329,7 +329,13 @@ export default function AdminPanel() {
                   )}
 
                   {currentPost.link_apuesta && (
-                    <div className="w-full group flex flex-col bg-brand text-black rounded-2xl relative overflow-hidden">
+                    <a 
+                      href={currentPost.link_apuesta}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full group flex flex-col bg-brand hover:bg-white text-black rounded-2xl transition-all relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 w-1/3 h-full bg-white/40 skew-x-12 -translate-x-[200%] group-hover:animate-[shine_1.5s_ease-out]"></div>
                       <div className="flex items-center justify-between py-4 px-5 relative z-10">
                         <span className="flex-1 text-center font-black text-[11px] md:text-[12px] tracking-[0.1em]">TOCA AQUÍ PARA HACER LA JUGADA</span>
                         <div className="bg-black/10 p-1.5 rounded-lg border border-black/5">
@@ -339,7 +345,7 @@ export default function AdminPanel() {
                       <div className="bg-black/10 py-2 px-3 text-center border-t border-black/10 relative z-10">
                         <span className="text-[8px] font-bold tracking-widest opacity-80 break-all">{currentPost.link_apuesta}</span>
                       </div>
-                    </div>
+                    </a>
                   )}
                 </div>
 
