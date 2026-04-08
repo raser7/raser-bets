@@ -7,6 +7,7 @@ import Logo from '../components/Logo';
 export default function AdminPanel() {
   const [file, setFile] = useState(null);
   const [analisis, setAnalisis] = useState('');
+  const [recomendacion, setRecomendacion] = useState('');
   const [linkApuesta, setLinkApuesta] = useState('');
   const [passwordLocal, setPasswordLocal] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,7 @@ export default function AdminPanel() {
   const resetForm = () => {
     setFile(null);
     setAnalisis('');
+    setRecomendacion('');
     setLinkApuesta('');
     setPasswordLocal('');
   }
@@ -95,6 +97,7 @@ export default function AdminPanel() {
         fecha_actualizacion: new Date(),
       };
       
+      if (recomendacion) payload.recomendacion = recomendacion;
       if (imagenUrl) payload.imagen_url = imagenUrl;
 
       // Single document overwrite. No history logic!
@@ -202,6 +205,20 @@ export default function AdminPanel() {
             ></textarea>
           </div>
 
+          <div className="space-y-2 pt-2 border-t border-white/5">
+            <label className="text-red-500 font-bold text-[10px] tracking-[0.15em] flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_#ef4444]"></span>
+              LÍMITE MÁXIMO A APOSTAR
+            </label>
+            <input
+              type="text"
+              className="w-full bg-red-500/5 border border-red-500/20 rounded-2xl px-5 py-4 text-red-500 placeholder-red-900/50 focus:outline-none focus:border-red-500/50 text-sm font-bold tracking-wide transition-colors"
+              placeholder="Ej: Solo el 5% de tu capital..."
+              value={recomendacion}
+              onChange={(e) => setRecomendacion(e.target.value)}
+            />
+          </div>
+
           <div className="space-y-2">
             <label className="text-zinc-500 font-bold text-[10px] tracking-[0.15em]">LINK DE APUESTA</label>
             <div className="relative">
@@ -286,37 +303,49 @@ export default function AdminPanel() {
              <p className="font-bold tracking-[0.2em] text-[10px]">NO HAY PUBLICACIÓN ACTIVA</p>
            </div>
          ) : (
-           <div className="w-full max-w-md mt-20 bg-[#0a0a0c] border border-zinc-800/80 rounded-[2rem] p-4 md:p-6 shadow-2xl relative">
+           <div className="w-full max-w-md mt-20 bg-[#0a0a0c] border border-zinc-800/80 rounded-[2rem] p-6 shadow-2xl relative flex flex-col max-h-[75vh]">
               
-              {currentPost.imagen_url && (
-                <div className="w-full rounded-2xl overflow-hidden relative border border-white/5 bg-black">
-                   <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 shadow-lg">
-                     <div className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse shadow-[0_0_8px_#00ff66]"></div>
-                     APUESTA
-                   </div>
-                   <img src={currentPost.imagen_url} className="w-full h-auto object-cover opacity-90" alt="Preview"/>
-                </div>
-              )}
+              <div className="overflow-y-auto custom-scrollbar flex-1 pr-2 space-y-6">
+                {currentPost.imagen_url && (
+                  <div className="w-full rounded-2xl overflow-hidden relative border border-white/5 bg-black">
+                     <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 shadow-lg">
+                       <div className="w-1.5 h-1.5 bg-brand rounded-full animate-pulse shadow-[0_0_8px_#00ff66]"></div>
+                       APUESTA
+                     </div>
+                     <img src={currentPost.imagen_url} className="w-full h-auto object-cover opacity-90" alt="Preview"/>
+                  </div>
+                )}
 
-              {currentPost.analisis && (
-                <div className="mt-6 px-2">
-                   <h3 className="text-[9px] font-bold text-brand mb-3 tracking-[0.2em] flex items-center gap-2">
-                      INFORME VIP
-                   </h3>
-                   <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                     {currentPost.analisis}
-                   </p>
-                </div>
-              )}
+                {currentPost.recomendacion && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 shadow-inner">
+                    <h3 className="text-red-500 text-[9px] font-black tracking-[0.2em] mb-1 flex items-center gap-2">
+                       LÍMITE RECOMENDADO
+                    </h3>
+                    <p className="text-red-400 font-bold text-xs">{currentPost.recomendacion}</p>
+                  </div>
+                )}
 
-              {currentPost.link_apuesta && (
-                <div className="mt-8 px-2">
-                  <a href={currentPost.link_apuesta} target="_blank" rel="noreferrer" className="w-full flex items-center justify-between bg-zinc-900/50 hover:bg-zinc-800 text-white font-bold text-[11px] tracking-[0.15em] py-4 px-6 rounded-xl border border-zinc-800/50 transition-colors">
-                    <span className="flex-1 text-center pl-6">IR A LA CASA DE APUESTAS</span>
-                    <ExternalLink className="w-4 h-4 text-zinc-500" />
-                  </a>
-                </div>
-              )}
+                {currentPost.link_apuesta && (
+                  <div>
+                    <a href={currentPost.link_apuesta} target="_blank" rel="noreferrer" className="w-full flex items-center justify-between bg-zinc-900/50 hover:bg-zinc-800 text-white font-bold text-[11px] tracking-[0.15em] py-4 px-6 rounded-xl border border-zinc-800/50 transition-colors">
+                      <span className="flex-1 text-center pl-6">IR A LA CASA</span>
+                      <ExternalLink className="w-4 h-4 text-zinc-500" />
+                    </a>
+                  </div>
+                )}
+
+                {currentPost.analisis && (
+                  <div className="pt-2 border-t border-white/5">
+                     <h3 className="text-[9px] font-bold text-brand mb-3 tracking-[0.2em] flex items-center gap-2">
+                        INFORME VIP
+                     </h3>
+                     <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                       {currentPost.analisis}
+                     </p>
+                  </div>
+                )}
+              </div>
+
            </div>
          )}
       </div>
