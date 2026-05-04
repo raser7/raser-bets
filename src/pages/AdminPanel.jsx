@@ -3,6 +3,8 @@ import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Upload, Link2, Send, Loader2, CheckCircle2, RefreshCcw, Copy, ExternalLink, Activity, Clock, X } from 'lucide-react';
 import Logo from '../components/Logo';
+import TTSControls from '../components/TTSControls';
+import useGeminiTTS from '../hooks/useGeminiTTS';
 
 export default function AdminPanel() {
   const [file, setFile] = useState(null);
@@ -23,6 +25,10 @@ export default function AdminPanel() {
   const [modalPeriod, setModalPeriod] = useState('de la MAÑANA');
 
   const [currentPost, setCurrentPost] = useState(null);
+  const previewText = analisis || currentPost?.analisis || '';
+  const tts = useGeminiTTS({
+    remoteAudioUrl: analisis ? '' : currentPost?.audio_url || '',
+  });
 
   const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
 
@@ -91,6 +97,8 @@ export default function AdminPanel() {
 
     try {
       let imagenUrl = "";
+      const previousAudioPublicId = currentPost?.audio_public_id || '';
+      const shouldGenerateAudio = Boolean(analisis.trim());
       
       if (file) {
         setStatus('Subiendo imagen a ImgBB...');
@@ -110,11 +118,14 @@ export default function AdminPanel() {
         }
       }
 
-      setStatus('Guardando BD...');
+      setStatus('Publicando contenido...');
       const payload = {
         analisis: analisis,
         link_apuesta: linkApuesta,
         fecha_actualizacion: new Date(),
+        audio_url: '',
+        audio_public_id: '',
+        audio_status: shouldGenerateAudio ? 'generating' : 'idle',
       };
       
       if (recomendacion) payload.recomendacion = recomendacion;
@@ -126,8 +137,55 @@ export default function AdminPanel() {
       if (passwordLocal) {
         await setDoc(doc(db, "configuracion", "seguridad"), { password: passwordLocal });
       }
-      
-      setStatus('¡Éxito!');
+
+      if (shouldGenerateAudio || previousAudioPublicId) {
+        setStatus(shouldGenerateAudio ? 'Publicación lista. Generando audio...' : 'Publicación lista. Borrando audio anterior...');
+
+        try {
+          const audioRes = await fetch('/api/publish-audio', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              text: analisis,
+              previousPublicId: previousAudioPublicId,
+            }),
+          });
+
+          const audioData = await audioRes.json();
+
+          if (!audioRes.ok) {
+            throw new Error(audioData?.error || 'No se pudo guardar el audio del informe.');
+          }
+
+          await setDoc(
+            doc(db, "contenido_app", "pronostico_actual"),
+            {
+              audio_url: audioData.audioUrl || '',
+              audio_public_id: audioData.publicId || '',
+              audio_status: audioData.audioUrl ? 'ready' : 'idle',
+            },
+            { merge: true }
+          );
+        } catch (audioError) {
+          console.error(audioError);
+
+          await setDoc(
+            doc(db, "contenido_app", "pronostico_actual"),
+            {
+              audio_url: '',
+              audio_public_id: '',
+              audio_status: 'error',
+            },
+            { merge: true }
+          );
+
+          alert("La publicación salió, pero el audio falló: " + audioError.message);
+        }
+      }
+
+      setStatus('¡Publicación lista!');
       setTimeout(() => {
         setStatus('');
         resetForm();
@@ -372,18 +430,52 @@ export default function AdminPanel() {
                   )}
                 </div>
 
-                {/* Columna Derecha (Análisis) */}
-                {currentPost.analisis && (
-                  <div className="w-full lg:w-7/12 bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/5 rounded-2xl p-6 h-fit transition-colors">
-                     <h3 className="text-[9px] font-bold text-brand mb-3 tracking-[0.2em] flex items-center gap-2">
-                        INFORME VIP
-                        <div className="flex-1 h-px bg-gradient-to-r from-brand/20 to-transparent ml-2"></div>
-                     </h3>
+                 {/* Columna Derecha (Análisis) */}
+                 {(analisis || currentPost.analisis) && (
+                   <div className="w-full lg:w-7/12 bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-white/5 rounded-2xl p-6 h-fit transition-colors">
+                     <div className="flex flex-col gap-3 mb-3">
+                       <div className="flex items-center gap-2">
+                         <h3 className="text-[9px] font-bold text-brand tracking-[0.2em] flex items-center gap-2">
+                            INFORME VIP
+                         </h3>
+                         <div className="flex-1 h-px bg-gradient-to-r from-brand/20 to-transparent ml-2"></div>
+                       </div>
+
+                       <TTSControls
+                         canPlay={tts.canPlay}
+                         isLoading={tts.isLoading}
+                         isPlaying={tts.isPlaying}
+                         isPaused={tts.isPaused}
+                         error={tts.error}
+                         message={tts.message}
+                         onPlay={tts.play}
+                         onPause={tts.pause}
+                         onStop={tts.stop}
+                       />
+
+                       {analisis && (
+                         <p className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+                           El audio se generará cuando publiques esta jugada.
+                         </p>
+                       )}
+
+                       {!analisis && currentPost?.audio_status === 'generating' && (
+                         <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                           Generando audio del informe. Aparecerá aquí cuando termine.
+                         </p>
+                       )}
+
+                       {!analisis && currentPost?.audio_status === 'error' && (
+                         <p className="text-[11px] font-medium text-red-500 dark:text-red-400">
+                           El informe se publicó, pero el audio no se pudo generar.
+                         </p>
+                       )}
+                     </div>
                      <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap font-medium">
-                       {currentPost.analisis}
+                       {previewText}
                      </p>
-                  </div>
-                )}
+                   </div>
+                 )}
                 
               </div>
            </div>

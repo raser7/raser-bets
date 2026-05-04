@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { Loader2, ExternalLink, RefreshCcw, Lock } from 'lucide-react';
+import { ExternalLink, Lock, RefreshCcw } from 'lucide-react';
 import Logo from '../components/Logo';
+import TTSControls from '../components/TTSControls';
+import useGeminiTTS from '../hooks/useGeminiTTS';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const tts = useGeminiTTS({
+    remoteAudioUrl: data?.audio_url || '',
+  });
 
   useEffect(() => {
+    let unsubscribeContent = () => {};
+
     const localPassword = localStorage.getItem('raserbets_auth_password');
     if (!localPassword) {
       navigate('/');
@@ -28,25 +35,29 @@ export default function Dashboard() {
           return;
         }
 
-        const docRef = doc(db, "contenido_app", "pronostico_actual");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          setData(docSnap.data());
-        } else {
-          console.log("No hay pronóstico activo.");
-        }
+        unsubscribeContent = onSnapshot(doc(db, "contenido_app", "pronostico_actual"), (docSnap) => {
+          if (docSnap.exists()) {
+            setData(docSnap.data());
+          } else {
+            setData(null);
+          }
+          setLoading(false);
+        });
       } catch (error) {
         console.error("Error obteniendo datos:", error);
-      } finally {
         setLoading(false);
       }
     };
 
     fetchData();
+
+    return () => {
+      unsubscribeContent();
+    };
   }, [navigate]);
 
   const handleLogout = () => {
+    tts.stop();
     localStorage.removeItem('raserbets_auth_password');
     navigate('/');
   };
@@ -136,17 +147,45 @@ export default function Dashboard() {
             </div>
 
             {/* Columna Derecha: Análisis Largo */}
-            {data.analisis && (
-              <div className="w-full lg:w-7/12 bg-white dark:bg-[#050505] border border-slate-200 dark:border-zinc-900/80 rounded-2xl p-6 md:p-8 flex flex-col h-fit sticky top-24 shadow-xl dark:shadow-none transition-colors">
-                <h3 className="text-[10px] font-bold text-brand mb-4 tracking-[0.2em] flex items-center gap-2">
-                  INFORME VIP
-                  <div className="flex-1 h-px bg-gradient-to-r from-brand/20 dark:from-brand/20 to-transparent ml-2"></div>
-                </h3>
-                <p className="text-slate-700 dark:text-zinc-300 text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
-                  {data.analisis}
-                </p>
-              </div>
-            )}
+              {data.analisis && (
+                <div className="w-full lg:w-7/12 bg-white dark:bg-[#050505] border border-slate-200 dark:border-zinc-900/80 rounded-2xl p-6 md:p-8 flex flex-col h-fit sticky top-24 shadow-xl dark:shadow-none transition-colors">
+                  <div className="flex flex-col gap-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-[10px] font-bold text-brand tracking-[0.2em] flex items-center gap-2">
+                        INFORME VIP
+                      </h3>
+                      <div className="flex-1 h-px bg-gradient-to-r from-brand/20 dark:from-brand/20 to-transparent"></div>
+                    </div>
+
+                    <TTSControls
+                      canPlay={tts.canPlay}
+                      isLoading={tts.isLoading}
+                      isPlaying={tts.isPlaying}
+                      isPaused={tts.isPaused}
+                      error={tts.error}
+                      message={tts.message}
+                      onPlay={tts.play}
+                      onPause={tts.pause}
+                      onStop={tts.stop}
+                    />
+
+                    {data.audio_status === 'generating' && (
+                      <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                        Generando audio del informe. Estará disponible en breve.
+                      </p>
+                    )}
+
+                    {data.audio_status === 'error' && (
+                      <p className="text-[11px] font-medium text-red-500 dark:text-red-400">
+                        El audio de este informe no se pudo generar.
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-slate-700 dark:text-zinc-300 text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
+                    {data.analisis}
+                  </p>
+                </div>
+              )}
 
           </div>
         )}
