@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Upload, Link2, Send, Loader2, CheckCircle2, RefreshCcw, Copy, ExternalLink, Activity, Clock, X } from 'lucide-react';
 import Logo from '../components/Logo';
 import TTSControls from '../components/TTSControls';
 import useGeminiTTS from '../hooks/useGeminiTTS';
+import { getChipControlPath, isAdminSessionActive, setAdminSessionActive } from '../lib/adminAuth';
+
+const tokenActionButtonClass =
+  'inline-flex items-center justify-center rounded-xl border border-brand/20 bg-brand/10 text-brand transition-colors hover:border-brand/40 hover:bg-brand hover:text-black active:scale-[0.98]';
 
 export default function AdminPanel() {
   const [file, setFile] = useState(null);
@@ -16,7 +21,7 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [copied, setCopied] = useState(false);
-  const [isAdminAuthed, setIsAdminAuthed] = useState(false);
+  const [isAdminAuthed, setIsAdminAuthed] = useState(() => isAdminSessionActive());
   const [masterPass, setMasterPass] = useState('');
   
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
@@ -43,6 +48,18 @@ export default function AdminPanel() {
     return () => unsub();
   }, []);
 
+  useEffect(() => {
+    if (!currentPost?.proxima_hora) return;
+
+    const match = currentPost.proxima_hora.match(/^(\d{1,2}):(\d{2})\s+(.+)$/);
+    if (!match) return;
+
+    setProximaHora(currentPost.proxima_hora);
+    setModalHour(match[1]);
+    setModalMin(match[2]);
+    setModalPeriod(match[3]);
+  }, [currentPost?.proxima_hora]);
+
   // Agregar soporte para Pegar Imagen (Ctrl+V)
   useEffect(() => {
     const handlePaste = (e) => {
@@ -68,11 +85,16 @@ export default function AdminPanel() {
     setPasswordLocal(token);
   };
 
-  const handleCopy = () => {
-    if(passwordLocal) {
-        navigator.clipboard.writeText(passwordLocal);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    if (!passwordLocal) return;
+
+    try {
+      await navigator.clipboard.writeText(passwordLocal);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error(error);
+      alert('No se pudo copiar el token.');
     }
   };
 
@@ -83,7 +105,32 @@ export default function AdminPanel() {
     setRecomendacion('');
     setLinkApuesta('');
     setPasswordLocal('');
-  }
+    setCopied(false);
+  };
+
+  const handleAdminAccess = () => {
+    if (masterPass === import.meta.env.VITE_MASTER_PASS) {
+      setAdminSessionActive(true);
+      setIsAdminAuthed(true);
+      return;
+    }
+
+    alert('Acceso Denegado.');
+  };
+
+  const handleSaveNextForecastTime = async () => {
+    const horaGuardar = `${modalHour}:${modalMin} ${modalPeriod}`;
+    setProximaHora(horaGuardar);
+
+    try {
+      await setDoc(doc(db, "contenido_app", "pronostico_actual"), { proxima_hora: horaGuardar }, { merge: true });
+      setIsTimeModalOpen(false);
+      alert(`¡Hora Programada y Guardada en Vivo!: ${horaGuardar}`);
+    } catch (error) {
+      console.error(error);
+      alert("Error al intentar guardar hora");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -211,21 +258,14 @@ export default function AdminPanel() {
               onChange={e => setMasterPass(e.target.value.toUpperCase())} 
               onKeyDown={(e) => {
                  if (e.key === 'Enter') {
-                   if(masterPass === import.meta.env.VITE_MASTER_PASS) setIsAdminAuthed(true);
-                   else alert('Acceso Denegado.');
+                   handleAdminAccess();
                  }
               }}
               className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-zinc-800 focus:border-brand/50 rounded-2xl px-5 py-4 text-center text-slate-800 dark:text-white tracking-[0.2em] font-mono text-sm mb-6 outline-none transition-all" 
               placeholder="MASTER KEY" 
             />
             <button 
-              onClick={() => {
-                if(masterPass === import.meta.env.VITE_MASTER_PASS) {
-                  setIsAdminAuthed(true);
-                } else {
-                  alert('Acceso Denegado.');
-                }
-              }} 
+              onClick={handleAdminAccess}
               className="w-full bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-brand dark:hover:bg-brand font-extrabold py-4 rounded-xl transition-colors text-[11px] tracking-[0.2em] active:scale-95"
             >
               INGRESAR AL PANEL
@@ -242,11 +282,22 @@ export default function AdminPanel() {
       <div className="w-full md:w-[480px] bg-white dark:bg-[#0a0a0c] border-r border-slate-200 dark:border-white/5 p-5 flex flex-col h-screen md:sticky top-0 overflow-y-auto custom-scrollbar transition-colors">
         
         <div className="mb-5">
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight transition-colors">
-            <Logo className="w-8 h-8 text-brand drop-shadow-[0_0_15px_rgba(0,255,102,0.5)]" />
-            Panel Admin
-          </h1>
-          <p className="text-gray-500 text-[10px] mt-2 font-bold tracking-[0.2em] uppercase">Sobreescribe Tu Jugada.</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight transition-colors">
+                <Logo className="w-8 h-8 text-brand drop-shadow-[0_0_15px_rgba(0,255,102,0.5)]" />
+                Panel Admin
+              </h1>
+              <p className="text-gray-500 text-[10px] mt-2 font-bold tracking-[0.2em] uppercase">Sobreescribe Tu Jugada.</p>
+            </div>
+
+            <Link
+              to={getChipControlPath()}
+              className="inline-flex items-center justify-center rounded-2xl border border-brand/20 bg-brand/10 px-4 py-3 text-[10px] font-black tracking-[0.18em] uppercase text-brand transition-colors hover:bg-brand hover:text-black"
+            >
+              Modulo Chips
+            </Link>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
@@ -327,7 +378,8 @@ export default function AdminPanel() {
               <button 
                 type="button" 
                 onClick={generarPassword}
-                className="px-4 bg-slate-50 dark:bg-brand/5 hover:bg-brand text-slate-800 dark:text-brand hover:text-black rounded-xl transition-colors border border-slate-200 dark:border-brand/20 flex items-center justify-center"
+                aria-label="Generar token de acceso"
+                className={`${tokenActionButtonClass} px-4`}
               >
                 <RefreshCcw className="w-5 h-5" />
               </button>
@@ -336,8 +388,13 @@ export default function AdminPanel() {
             {passwordLocal && (
               <div className="flex items-center justify-between text-brand mt-2 px-2">
                  <span className="text-[10px] tracking-widest uppercase font-bold opacity-70">Copiar a portapapeles:</span>
-                 <button type="button" onClick={handleCopy} className="hover:text-slate-800 dark:hover:text-white p-2 bg-brand/10 rounded-lg transition-colors">
-                   {copied ? <CheckCircle2 className="w-4 h-4 text-brand" /> : <Copy className="w-4 h-4 text-brand" />}
+                 <button
+                   type="button"
+                   onClick={handleCopy}
+                   aria-label={copied ? 'Token copiado' : 'Copiar token'}
+                   className={`${tokenActionButtonClass} p-2`}
+                 >
+                   {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                  </button>
               </div>
             )}
@@ -533,19 +590,7 @@ export default function AdminPanel() {
             </select>
 
             <button
-               onClick={async () => {
-                 const horaGuardar = `${modalHour}:${modalMin} ${modalPeriod}`;
-                 setProximaHora(horaGuardar); 
-                 
-                 try {
-                   await setDoc(doc(db, "contenido_app", "pronostico_actual"), { proxima_hora: horaGuardar }, { merge: true });
-                   setIsTimeModalOpen(false);
-                   alert(`¡Hora Programada y Guardada en Vivo!: ${horaGuardar}`);
-                 } catch (err) {
-                   console.error(err);
-                   alert("Error al intentar guardar hora");
-                 }
-               }}
+               onClick={handleSaveNextForecastTime}
                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[12px] tracking-[0.1em] py-3.5 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-500/20"
             >
               APLICAR Y GUARDAR

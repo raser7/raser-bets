@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <title>Raserbets VIP</title>
+    <script>
+      (() => {
+        const savedTheme = localStorage.getItem('theme');
+        const theme = savedTheme === 'light' || savedTheme === 'dark'
+          ? savedTheme
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
   </head>
-  <body class="font-sans antialiased min-h-screen transition-colors duration-500 ease-in-out bg-slate-50 text-slate-900 dark:bg-[#050505] dark:text-gray-200">
+  <body class="font-sans antialiased min-h-screen">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

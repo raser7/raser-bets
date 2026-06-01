@@ -9,6 +9,12 @@
   .dark {
     --color-brand: #00ff66; /* Neón original para el modo oscuro */
   }
+
+  .theme-switching *,
+  .theme-switching *::before,
+  .theme-switching *::after {
+    transition: none !important;
+  }
 }
 
 @layer utilities {
@@ -27,10 +33,10 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 transition-colors duration-500 ease-in-out;
+  @apply min-h-screen bg-slate-50 text-slate-900;
 }
 
 .dark body {
-  @apply bg-slate-900 text-slate-50;
-  /* Eliminamos el negro puro radial antiguo y dejamos el gris muy oscuro (slate-900) */
+  @apply text-gray-200;
+  background-color: #050505;
 }
