@@ -10,13 +10,11 @@ export default function TTSControls({
   onPlay,
   onPause,
   onStop,
-  compact = false,
 }) {
   if (!canPlay) return null;
 
-  const buttonClass = compact
-    ? 'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-brand text-black hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10px] font-black tracking-[0.15em]'
-    : 'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-brand text-black hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10px] font-black tracking-[0.15em]';
+  const buttonClass =
+    'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-brand text-black hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors text-[10px] font-black tracking-[0.15em]';
 
   const secondaryClass =
     'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10 transition-colors text-[10px] font-black tracking-[0.15em]';

@@ -1,30 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
-export default function ThemeToggle() {
-  const [theme, setTheme] = useState(() => {
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-      return localStorage.getItem('theme');
-    }
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    return 'light';
-  });
+function getPreferredTheme() {
+  if (typeof window === 'undefined') return 'light';
 
-  useEffect(() => {
+  const savedTheme = window.localStorage.getItem('theme');
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    return savedTheme;
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+export default function ThemeToggle() {
+  const [theme, setTheme] = useState(getPreferredTheme);
+
+  useLayoutEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    root.classList.toggle('dark', theme === 'dark');
+    root.style.colorScheme = theme;
+    window.localStorage.setItem('theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    const root = window.document.documentElement;
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+
+    root.classList.add('theme-switching');
+    setTheme(nextTheme);
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        root.classList.remove('theme-switching');
+      });
+    });
   };
 
   return (
