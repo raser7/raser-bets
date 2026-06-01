@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Upload, Link2, Send, Loader2, CheckCircle2, RefreshCcw, Copy, ExternalLink, Activity, Clock, X } from 'lucide-react';
 import Logo from '../components/Logo';
 import TTSControls from '../components/TTSControls';
 import useGeminiTTS from '../hooks/useGeminiTTS';
+import { getChipControlPath, isAdminSessionActive, setAdminSessionActive } from '../lib/adminAuth';
 
 const tokenActionButtonClass =
   'inline-flex items-center justify-center rounded-xl border border-brand/20 bg-brand/10 text-brand transition-colors hover:border-brand/40 hover:bg-brand hover:text-black active:scale-[0.98]';
@@ -19,7 +21,7 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [copied, setCopied] = useState(false);
-  const [isAdminAuthed, setIsAdminAuthed] = useState(false);
+  const [isAdminAuthed, setIsAdminAuthed] = useState(() => isAdminSessionActive());
   const [masterPass, setMasterPass] = useState('');
   
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
@@ -108,6 +110,7 @@ export default function AdminPanel() {
 
   const handleAdminAccess = () => {
     if (masterPass === import.meta.env.VITE_MASTER_PASS) {
+      setAdminSessionActive(true);
       setIsAdminAuthed(true);
       return;
     }
@@ -279,11 +282,22 @@ export default function AdminPanel() {
       <div className="w-full md:w-[480px] bg-white dark:bg-[#0a0a0c] border-r border-slate-200 dark:border-white/5 p-5 flex flex-col h-screen md:sticky top-0 overflow-y-auto custom-scrollbar transition-colors">
         
         <div className="mb-5">
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight transition-colors">
-            <Logo className="w-8 h-8 text-brand drop-shadow-[0_0_15px_rgba(0,255,102,0.5)]" />
-            Panel Admin
-          </h1>
-          <p className="text-gray-500 text-[10px] mt-2 font-bold tracking-[0.2em] uppercase">Sobreescribe Tu Jugada.</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight transition-colors">
+                <Logo className="w-8 h-8 text-brand drop-shadow-[0_0_15px_rgba(0,255,102,0.5)]" />
+                Panel Admin
+              </h1>
+              <p className="text-gray-500 text-[10px] mt-2 font-bold tracking-[0.2em] uppercase">Sobreescribe Tu Jugada.</p>
+            </div>
+
+            <Link
+              to={getChipControlPath()}
+              className="inline-flex items-center justify-center rounded-2xl border border-brand/20 bg-brand/10 px-4 py-3 text-[10px] font-black tracking-[0.18em] uppercase text-brand transition-colors hover:bg-brand hover:text-black"
+            >
+              Modulo Chips
+            </Link>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
