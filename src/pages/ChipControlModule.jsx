@@ -1,4 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
+
+// Firestore document — separate from the betting module collections
+const CHIP_FS_DOC = doc(db, 'chip_control', 'state');
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -46,6 +51,18 @@ import {
   toCsv,
 } from '../lib/chipControl';
 import { getAdminBasePath, isAdminSessionActive } from '../lib/adminAuth';
+
+// ─── Firestore helpers ────────────────────────────────────────────────────────
+
+async function saveStateToFirestore(state) {
+  try {
+    await setDoc(CHIP_FS_DOC, state);
+    // Mirror to localStorage as offline cache
+    window.localStorage.setItem(CHIP_CONTROL_STORAGE_KEY, JSON.stringify(state));
+  } catch (err) {
+    console.error('[ChipControl] Firestore write failed:', err);
+  }
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -202,15 +219,75 @@ export default function ChipControlModule() {
 
   // delete confirm
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [fsLoading, setFsLoading] = useState(true);
+  const [fsError, setFsError] = useState(false);
+  // Prevent writing back to Firestore data that just came FROM Firestore
+  const skipNextSave = useRef(false);
 
+  // Auth guard
   useEffect(() => { if (!isAuthorized) navigate(getAdminBasePath(), { replace: true }); }, [isAuthorized, navigate]);
-  useEffect(() => { if (typeof window !== 'undefined') window.localStorage.setItem(CHIP_CONTROL_STORAGE_KEY, JSON.stringify(state)); }, [state]);
+
+  // ── Firestore real-time listener ──────────────────────────────────────────
+  useEffect(() => {
+    const unsub = onSnapshot(
+      CHIP_FS_DOC,
+      (snap) => {
+        if (snap.exists()) {
+          const remote = snap.data();
+          const base = createInitialChipControlState();
+          const merged = {
+            ...base,
+            ...remote,
+            chips: Array.isArray(remote.chips) ? remote.chips : [],
+            history: Array.isArray(remote.history) ? remote.history : [],
+            operators: Array.isArray(remote.operators) && remote.operators.length ? remote.operators : DEFAULT_OPERATORS,
+            tags: Array.isArray(remote.tags) && remote.tags.length ? remote.tags : DEFAULT_TAGS,
+            settings: { ...base.settings, ...(remote.settings || {}) },
+          };
+          skipNextSave.current = true;
+          setState(merged);
+          // Keep localStorage in sync as offline cache
+          window.localStorage.setItem(CHIP_CONTROL_STORAGE_KEY, JSON.stringify(merged));
+        }
+        setFsLoading(false);
+        setFsError(false);
+      },
+      (err) => {
+        console.error('[ChipControl] Firestore listener error:', err);
+        setFsLoading(false);
+        setFsError(true);
+      }
+    );
+    return () => unsub();
+  }, []);
+
+  // ── Write to Firestore on every state change ──────────────────────────────
+  useEffect(() => {
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
+    }
+    if (!fsLoading) {
+      saveStateToFirestore(state);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
   useEffect(() => { setSettingsForm({ ...state.settings }); }, [state.settings]);
 
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#050505] flex items-center justify-center">
         <p className="text-sm text-slate-500">Verificando acceso…</p>
+      </div>
+    );
+  }
+
+  if (fsLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#050505] flex flex-col items-center justify-center gap-3">
+        <div className="w-6 h-6 rounded-full border-2 border-brand border-t-transparent animate-spin" />
+        <p className="text-sm text-slate-500">Cargando datos…</p>
       </div>
     );
   }
@@ -379,6 +456,13 @@ export default function ChipControlModule() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+      {/* ── Firestore error banner ── */}
+      {fsError && (
+        <div className="bg-amber-500 text-black text-xs font-bold text-center py-1.5 px-4">
+          Sin conexión a la nube — los cambios se guardarán localmente hasta reconectar.
+        </div>
+      )}
 
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/5 bg-white/90 dark:bg-black/50 backdrop-blur-xl transition-colors">
